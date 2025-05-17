@@ -2,7 +2,7 @@ import subprocess
 import os
 
 # Set this to your local folder
-source_folder = r"C:\Users\elis.jackson\repos\sunrise_alarm_2"
+source_folder = r"C:\Users\Elis\repos\sunrise_alarm_2_git"
 # Target directory on the Pico (usually root)
 target_path = "/"
 
@@ -42,7 +42,7 @@ def upload_directory(
         remote_dir: str,
         existing_files,
         ignore: list[str] = []
-        ):
+        ) -> int:
     global apply_to_all
     for root, _, files in os.walk(local_dir):
 
@@ -53,6 +53,8 @@ def upload_directory(
         if len(set(root.split("\\")).intersection(ignore_roots)) > 0:
             print(f"Skipping {root}")
             continue
+
+        files_uploaded = 0  # count of files uploaded
 
         for file in files:
             local_path = os.path.join(root, file)
@@ -86,6 +88,9 @@ def upload_directory(
                         print("Invalid input. Skipping file.")
                         continue  # default to skip
             upload_file(local_path, remote_path)
+            files_uploaded += 1
+
+    return files_uploaded
 
 
 def get_mpremote_devices():
@@ -118,4 +123,15 @@ if __name__ == "__main__":
 
     print("Reading files from Pico...")
     pico_files = list_files_on_pico()
-    upload_directory(source_folder, target_path, pico_files, ignore_list)
+
+    uploaded_count = upload_directory(
+        source_folder,
+        target_path,
+        pico_files,
+        ignore_list
+        )
+    
+    if uploaded_count == 0:
+        print("\nNo files uploaded.")
+    else:
+        print(f"\n{uploaded_count} files have been uploaded.")
